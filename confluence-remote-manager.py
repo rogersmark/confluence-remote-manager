@@ -62,7 +62,7 @@ class ConfluenceGTK:
         #User Name Setup
         self.userNameLabel = gtk.Label("Username: ")
         self.userNameEntry = gtk.Entry()
-        self.userNameEntry.set_text("")
+        self.userNameEntry.set_text("admin")
         self.loginHBox.pack_start(self.userNameLabel, True, True, 0)
         self.loginHBox.pack_start(self.userNameEntry, True, True, 0)
 
@@ -70,7 +70,7 @@ class ConfluenceGTK:
         self.passwordHBox = gtk.HBox(False, 0)
         self.passwordLabel = gtk.Label("Password: ")
         self.passwordEntry = gtk.Entry()
-        self.passwordEntry.set_text("")
+        self.passwordEntry.set_text("admin")
         self.passwordEntry.set_visibility(False)
         self.passwordHBox.pack_start(self.passwordLabel, True, True, 0)
         self.passwordHBox.pack_start(self.passwordEntry, True, True, 10)
