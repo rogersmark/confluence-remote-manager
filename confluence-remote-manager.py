@@ -19,10 +19,13 @@ import os
 import pygtk
 pygtk.require("2.0")
 import gtk
+import csv
+from random import choice
+import string
 import xmlrpclib
 from xmlrpclib import Server
 
-server = Server("http://localhost:8080/rpc/xmlrpc")
+#server = Server("http://localhost:8080/rpc/xmlrpc")
 
 class ConfluenceGTK:
 
@@ -41,6 +44,9 @@ class ConfluenceGTK:
         self.mainWindow.set_border_width(20)
         self.login()
         self.mainWindow.show()
+        
+    def randomPassword(self, length=8, chars=string.letters + string.digits):
+        return ''.join([choice(chars) for i in range(length)])
 
     def login(self):
         #loginVBox Setup
@@ -108,6 +114,7 @@ class ConfluenceGTK:
                 raise NameError, "Invalid URL"
             else:
                 self.server = Server(self.serverEntry.get_text())
+                
             self.token = self.server.confluence1.login(self.userNameEntry.get_text(), self.passwordEntry.get_text())
             self.mainWindow.remove(self.loginVBox)
             self.launchPad()
@@ -176,6 +183,7 @@ class ConfluenceGTK:
         self.rmGroupRadio = gtk.Button("Remove Group")
         self.addToGroupRadio = gtk.Button("Add User To Group")
         self.rmFromGroupRadio = gtk.Button("Remove User From Group")
+        self.bulkAddUsersRadio = gtk.Button("Add Bulk Users Via CSV")
 
         #Connect the Buttons to Funcs
         self.addUserRadio.connect("clicked", self.addUser)
@@ -184,6 +192,7 @@ class ConfluenceGTK:
         self.rmGroupRadio.connect("clicked", self.removeGroup)
         self.addToGroupRadio.connect("clicked", self.addToGroup)
         self.rmFromGroupRadio.connect("clicked", self.removeFromGroup)
+        self.bulkAddUsersRadio.connect("clicked", self.bulkAddUsers)
 
         #Pack All the Radio Buttons
         self.updatePostRadioVBox.pack_start(self.addUserRadio, False, False, 5)
@@ -192,6 +201,7 @@ class ConfluenceGTK:
         self.updatePostRadioVBox.pack_start(self.rmGroupRadio, False, False, 5)
         self.updatePostRadioVBox.pack_start(self.addToGroupRadio, False, False, 5)
         self.updatePostRadioVBox.pack_start(self.rmFromGroupRadio, False, False, 5)
+        self.updatePostRadioVBox.pack_start(self.bulkAddUsersRadio, False, False, 5)
 
         #Pack the VBox into the HBox so we can pack it into the greater VBox shortly.
         self.userManageHBoxTop.pack_start(self.updatePostRadioVBox, False, False, 200)
@@ -214,6 +224,7 @@ class ConfluenceGTK:
         self.rmGroupRadio.show()
         self.addToGroupRadio.show()
         self.rmFromGroupRadio.show()
+        self.bulkAddUsersRadio.show()
         self.returnMainMenuButton.show()
         self.userManageHBoxBottom.show()
         self.updatePostRadioVBox.show()
@@ -532,7 +543,30 @@ class ConfluenceGTK:
             userDialog.show()
         except xmlrpclib.Fault:
             self.errDialog("\t\tFailed to add user to Group.\n\t\tPlease check your permission level")
+            
+    def bulkAddUsers(self, widget=None, data=None):
+        self.csvSelector = gtk.FileSelection("Select comma-delimited CSV file")
+        self.csvSelector.ok_button.connect("clicked", self.rpc_bulkAddUsers)
+        self.csvSelector.cancel_button.connect("clicked", lambda w: self.csvSelector.destroy())
+        self.csvSelector.show()
+        
+    def rpc_bulkAddUsers(self, widget=None, data=None):
+        csvFile = csv.reader(open(self.csvSelector.get_filename()))
+        for row in csvFile:
+            userName = row[0]
+            fullName = row[1]
+            email = row[2]
+            password = self.randomPassword()
+            user = {"name":userName,"fullname":fullName,"email":email}
+            try:
+                self.server.confluence1.addUser(self.token, user, password)
+                for x in row[3:]:
+                    self.server.confluence1.addUserToGroup(self.token, userName, x)
+            except xmlrpclib.Fault:
+                self.errDialog("\t\tFailed to add '%s'\t\t\n Please ensure user doesn't already exist" % userName)
                 
+        self.csvSelector.destroy()
+        
     def searchConfluence(self, widget):
         self.mainWindow.remove(self.menuVBox)
 
