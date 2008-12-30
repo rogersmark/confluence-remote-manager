@@ -113,10 +113,10 @@ class ConfluenceGTK:
             self.launchPad()
             
         except xmlrpclib.Fault:
-            self.errDialog("           Login Failed              ")
+            self.errDialog("\t\t\tLogin Failed\t\t\t")
             
         except NameError:
-            self.errDialog("           URL Must end with proper RPC \n http://test.com/rpc/xmlrpc for example              ")
+            self.errDialog("\t\t\tURL Must end with proper RPC \n http://test.com/rpc/xmlrpc for example\t\t\t")
             
         except:
             self.errDialog("\t\tConnection Failed\t\t")
