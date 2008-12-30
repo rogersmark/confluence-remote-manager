@@ -544,14 +544,7 @@ class ConfluenceGTK:
         except xmlrpclib.Fault:
             self.errDialog("\t\tFailed to add user to Group.\n\t\tPlease check your permission level")
             
-    def bulkAddUsers(self, widget=None, data=None):
-        '''
-        self.csvSelector = gtk.FileSelection("Select comma-delimited CSV file")
-        self.csvSelector.ok_button.connect("clicked", self.rpc_bulkAddUsers)
-        self.csvSelector.cancel_button.connect("clicked", lambda w: self.csvSelector.destroy())
-        self.csvSelector.show()
-        '''
-        
+    def bulkAddUsers(self, widget=None, data=None):     
         self.csvSelector = gtk.FileChooserDialog("Select comma-delimited CSV file",
                                                 None,
                                                 gtk.FILE_CHOOSER_ACTION_OPEN,
