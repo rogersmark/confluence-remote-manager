@@ -545,24 +545,49 @@ class ConfluenceGTK:
             self.errDialog("\t\tFailed to add user to Group.\n\t\tPlease check your permission level")
             
     def bulkAddUsers(self, widget=None, data=None):
+        '''
         self.csvSelector = gtk.FileSelection("Select comma-delimited CSV file")
         self.csvSelector.ok_button.connect("clicked", self.rpc_bulkAddUsers)
         self.csvSelector.cancel_button.connect("clicked", lambda w: self.csvSelector.destroy())
         self.csvSelector.show()
+        '''
+        
+        self.csvSelector = gtk.FileChooserDialog("Select comma-delimited CSV file",
+                                                None,
+                                                gtk.FILE_CHOOSER_ACTION_OPEN,
+                                                (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                                 gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+        
+        csvFiles = gtk.FileFilter()
+        csvFiles.set_name("CSVs")
+        csvFiles.add_pattern("*.csv")
+        self.csvSelector.add_filter(csvFiles)
+        
+        allFiles = gtk.FileFilter()
+        allFiles.set_name("All Files")
+        allFiles.add_pattern("*")
+        self.csvSelector.add_filter(allFiles)
+        
+        response = self.csvSelector.run()
+        if response == gtk.RESPONSE_OK:
+            self.rpc_bulkAddUsers()
+        else:
+            self.csvSelector.destroy()
         
     def rpc_bulkAddUsers(self, widget=None, data=None):
-        csvFile = csv.reader(open(self.csvSelector.get_filename()))
-        for row in csvFile:
-            userName = row[0]
-            fullName = row[1]
-            email = row[2]
-            password = self.randomPassword()
-            user = {"name":userName,"fullname":fullName,"email":email}
-            try:
+        try:
+            csvFile = csv.reader(open(self.csvSelector.get_filename()))
+            for row in csvFile:
+                userName = row[0]
+                fullName = row[1]
+                email = row[2]
+                password = self.randomPassword()
+                user = {"name":userName,"fullname":fullName,"email":email}
                 self.server.confluence1.addUser(self.token, user, password)
                 for x in row[3:]:
                     self.server.confluence1.addUserToGroup(self.token, userName, x)
-            except xmlrpclib.Fault:
+            self.successDialog("\t\tUsers added successfully!\t\t")
+        except xmlrpclib.Fault:
                 self.errDialog("\t\tFailed to add '%s'\t\t\n Please ensure user doesn't already exist" % userName)
                 
         self.csvSelector.destroy()
@@ -1173,6 +1198,23 @@ class ConfluenceGTK:
         label.show()
         button.show()
         errorDialog.show()
+        
+    def successDialog(self, data="None"):
+        successDia = gtk.Dialog("Success")
+        button = gtk.Button("Ok", gtk.STOCK_OK)
+        if data:
+            label = gtk.Label(data)
+        else:
+            label = gtk.labe("Error Occurred")
+            
+        button.connect("clicked", lambda x: successDia.hide())
+        
+        successDia.vbox.pack_start(label, True, True, 0)
+        successDia.action_area.pack_start(button, True, True, 0)
+        
+        label.show()
+        button.show()
+        successDia.show()
 
 def main():
     gtk.main()
