@@ -854,14 +854,21 @@ class ConfluenceGTK:
 
         #Space Key
         self.newPageHBox1 = gtk.HBox(False, 0)
-        self.newPageKeyLabel = gtk.Label("Space Key: ")
+        self.newPageHBox3 = gtk.HBox(False, 0)
+        self.newPageKeyLabel = gtk.Label("Space: ")
         self.newPageKey = gtk.Entry()
+        self.newPageKey.set_text("Key")
+        self.newPageParentLabel = gtk.Label("Parent: ")
+        self.newPageParentEntry = gtk.Entry()
+        self.newPageParentEntry.set_text("Title of Page")
         self.newPageLabel = gtk.Label("Title: ")
         self.newPagePostTitle = gtk.Entry()
         self.newPageHBox1.pack_start(self.newPageKeyLabel, False, False, 0)
         self.newPageHBox1.pack_start(self.newPageKey, False, False, 0)
         self.newPageHBox1.pack_end(self.newPagePostTitle, False, False, 0)
         self.newPageHBox1.pack_end(self.newPageLabel, False, False, 0)
+        self.newPageHBox3.pack_start(self.newPageParentLabel, False, False, 0)
+        self.newPageHBox3.pack_start(self.newPageParentEntry, False, False, 0)
 
         #Submit that shit
         self.returnMainMenuButton = gtk.Button(" Main Menu ")
@@ -879,6 +886,7 @@ class ConfluenceGTK:
         self.newPageScroll.add(self.newPageTextView)
         self.newPageVBox.pack_start(self.newPageTitle, False, False, 0)
         self.newPageVBox.pack_start(self.newPageHBox1, False, False, 10)
+        self.newPageVBox.pack_start(self.newPageHBox3, False, False, 10)
         self.newPageVBox.pack_start(self.newPageScroll, True, True, 0)
         self.newPageVBox.pack_end(self.newPageHBox2, False, False, 10)
         
@@ -888,6 +896,8 @@ class ConfluenceGTK:
         self.newPageVBox.show()
         self.newPageKeyLabel.show()
         self.newPageKey.show()
+        self.newPageParentLabel.show()
+        self.newPageParentEntry.show()
         self.newPageTitle.show()
         self.newPageLabel.show()
         self.newPagePostTitle.show()
@@ -895,12 +905,17 @@ class ConfluenceGTK:
         self.returnMainMenuButton.show()
         self.newPageHBox1.show()
         self.newPageHBox2.show()
+        self.newPageHBox3.show()
         self.mainWindow.add(self.newPageVBox)
 
     def rpc_newPage(self, widget=None):
         try:
             startiter, enditer = self.newPageTextBuffer.get_bounds()
-            newPost = {"title":self.newPagePostTitle.get_text(), "space":self.newPageKey.get_text(), "content":self.newPageTextBuffer.get_text(startiter, enditer)}
+            if self.newPageParentEntry.get_text() != "Title of Page":
+                tempPage = self.server.confluence1.getPage(self.token, self.newPageKey.get_text(), self.newPageParentEntry.get_text())
+                newPost = {"title":self.newPagePostTitle.get_text(), "space":self.newPageKey.get_text(), "content":self.newPageTextBuffer.get_text(startiter, enditer), "parentId":tempPage["id"]}
+            else:
+                newPost = {"title":self.newPagePostTitle.get_text(), "space":self.newPageKey.get_text(), "content":self.newPageTextBuffer.get_text(startiter, enditer)}
             result = self.server.confluence1.storePage(self.token, newPost)
             newPageDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
