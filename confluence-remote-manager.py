@@ -24,146 +24,34 @@ from random import choice
 import string
 import xmlrpclib
 from xmlrpclib import Server
+from confluence_classes import *
 
 #server = Server("http://localhost:8080/rpc/xmlrpc")
 
 class ConfluenceGTK:
 
     def quit(self, widget=None, data=None):
-        if self.token != "":
-            self.server.confluence1.logout(self.token)
+        if self.loginObj.token != "":
+            self.loginObj.server.confluence1.logout(self.loginObj.token)
                         
         gtk.main_quit()
 
     def __init__(self):
-        self.token = ""
         self.mainWindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.mainWindow.set_size_request(600,500)
         self.mainWindow.set_title("Confluence Remote Updater")
         self.mainWindow.connect("delete_event", lambda w,e: self.quit())
         self.mainWindow.set_border_width(20)
-        self.login()
+        self.loginObj = confluence_login.ConfluenceLogin(self)
+        self.searchObj = confluence_search.ConfluenceSearch(self)
         self.mainWindow.show()
         
     def randomPassword(self, length=8, chars=string.letters + string.digits):
         return ''.join([choice(chars) for i in range(length)])
 
-    def login(self):
-        #loginVBox Setup
-        self.loginVBox = gtk.VBox(False, 0)
-
-        #loginHBox Setup
-        self.loginHBox = gtk.HBox(False, 0)
-
-        #serverHBox Setup
-        self.serverHBox = gtk.HBox(False, 0)
-        
-        #Server Setup
-        self.serverLabel = gtk.Label("Server URL: ")
-        self.serverEntry = gtk.Entry()
-        self.serverEntry.set_text("http://localhost:8080/rpc/xmlrpc")
-        self.serverHBox.pack_start(self.serverLabel, True, True, 0)
-        self.serverHBox.pack_start(self.serverEntry, True, True, 0)
-
-        #User Name Setup
-        self.userNameLabel = gtk.Label("Username: ")
-        self.userNameEntry = gtk.Entry()
-        self.userNameEntry.set_text("admin")
-        self.loginHBox.pack_start(self.userNameLabel, True, True, 0)
-        self.loginHBox.pack_start(self.userNameEntry, True, True, 0)
-
-        #Password Setup
-        self.passwordHBox = gtk.HBox(False, 0)
-        self.passwordLabel = gtk.Label("Password: ")
-        self.passwordEntry = gtk.Entry()
-        self.passwordEntry.set_text("admin")
-        self.passwordEntry.set_visibility(False)
-        self.passwordHBox.pack_start(self.passwordLabel, True, True, 0)
-        self.passwordHBox.pack_start(self.passwordEntry, True, True, 10)
-
-        #Login Button Setup
-        self.loginButton = gtk.Button("     Login     ")
-        self.loginButton.connect("clicked", self.authenticate)
-        self.buttonHBox = gtk.HBox(False, 0)
-        self.buttonHBox.pack_start(self.loginButton, True, False, 0)
-
-        #VBox Packing
-        self.loginVBox.pack_start(self.serverHBox, False, False, 20)
-        self.loginVBox.pack_start(self.loginHBox, False, False, 20)
-        self.loginVBox.pack_start(self.passwordHBox, False, False, 20)
-        self.loginVBox.pack_start(self.buttonHBox, False, False, 20)
-
-        #Show all Items
-        self.serverEntry.show()
-        self.serverLabel.show()
-        self.userNameLabel.show()
-        self.userNameEntry.show()
-        self.passwordLabel.show()
-        self.passwordEntry.show()
-        self.loginButton.show()
-        self.serverHBox.show()
-        self.loginHBox.show()
-        self.passwordHBox.show()
-        self.buttonHBox.show()
-        self.loginVBox.show()
-        self.mainWindow.add(self.loginVBox)
-
-    def authenticate(self, widget):
-        try:
-            if self.serverEntry.get_text().endswith("xmlrpc") != True:
-                raise NameError, "Invalid URL"
-            else:
-                self.server = Server(self.serverEntry.get_text())
-                
-            self.token = self.server.confluence1.login(self.userNameEntry.get_text(), self.passwordEntry.get_text())
-            self.mainWindow.remove(self.loginVBox)
-            self.launchPad()
-            
-        except xmlrpclib.Fault:
-            self.errDialog("\t\t\tLogin Failed\t\t\t")
-            
-        except NameError:
-            self.errDialog("\t\t\tURL Must end with proper RPC \n http://test.com/rpc/xmlrpc for example\t\t\t")
-            
-        except:
-            self.errDialog("\t\tConnection Failed\t\t")
-
-    def launchPad(self):
-        #Vertical Box
-        self.menuVBox = gtk.VBox(False, 0)
-        
-        #Menu Label
-        self.menuLabel = gtk.Label("What Actions Would You Like to Perform Today?")
-
-        #User Management
-        self.userManageButton = gtk.Button("Manage Users")
-        self.userManageButton.connect("clicked", self.userManagement)
-
-        #Search Button
-        self.searchButton = gtk.Button("Search Confluence")
-        self.searchButton.connect("clicked", self.searchConfluence)
-
-        #Content Management Button
-        self.contentButton = gtk.Button("Content Management")
-        self.contentButton.connect("clicked", self.contentManagement)
-
-        #Pack it all Up
-        self.menuVBox.pack_start(self.menuLabel, False, False, 0)
-        self.menuVBox.pack_start(self.userManageButton, False, False, 30)        
-        self.menuVBox.pack_start(self.searchButton, False, False, 30)
-        self.menuVBox.pack_start(self.contentButton, False, False, 30)
-
-        #Show it Off
-        self.menuLabel.show()
-        self.userManageButton.show()
-        self.searchButton.show()
-        self.contentButton.show()
-        self.menuVBox.show()
-        self.mainWindow.add(self.menuVBox)
-
     def userManagement(self, widget):
         #Remove the current VBox
-        self.mainWindow.remove(self.menuVBox)
+        self.mainWindow.remove(self.loginObj.menuVBox)
 
         #Create our new Vbox
         self.userManagementVBox = gtk.VBox(False, 0)
@@ -293,7 +181,7 @@ class ConfluenceGTK:
     def rpc_addUser(self, widget=None, data=None):
         userDict = {"name":self.userEntry.get_text(), "fullname":self.nameEntry.get_text(), "email":self.emailEntry.get_text()}
         try:
-            result = server.confluence1.addUser(self.token, userDict, self.passEntry.get_text())
+            result = self.loginObj.server.confluence1.addUser(self.loginObj.token, userDict, self.passEntry.get_text())
             userDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, userDialog)
@@ -337,7 +225,7 @@ class ConfluenceGTK:
     
     def rpc_removeUser(self, widget=None, data=None):
         try:
-            result = server.confluence1.removeUser(self.token, self.userEntry.get_text())
+            result = self.loginObj.server.confluence1.removeUser(self.loginObj.token, self.userEntry.get_text())
             userDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, userDialog)
@@ -381,7 +269,7 @@ class ConfluenceGTK:
     
     def rpc_addGroup(self, widget=None, data=None):
         try:
-            result = server.confluence1.addGroup(self.token, self.groupEntry.get_text())
+            result = self.loginObj.server.confluence1.addGroup(self.loginObj.token, self.groupEntry.get_text())
             userDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, userDialog)
@@ -425,7 +313,7 @@ class ConfluenceGTK:
     
     def rpc_removeGroup(self, widget=None, data=None):
         try:
-            result = server.confluence1.removeGroup(self.token, self.groupEntry.get_text(), "")
+            result = self.loginObj.server.confluence1.removeGroup(self.loginObj.token, self.groupEntry.get_text(), "")
             userDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, userDialog)
@@ -478,7 +366,7 @@ class ConfluenceGTK:
     
     def rpc_addToGroup(self, widget=None, data=None):
         try:
-            result = server.confluence1.addUserToGroup(self.token, self.userEntry.get_text(), self.groupEntry.get_text())
+            result = self.loginObj.server.confluence1.addUserToGroup(self.loginObj.token, self.userEntry.get_text(), self.groupEntry.get_text())
             userDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, userDialog)
@@ -531,7 +419,7 @@ class ConfluenceGTK:
     
     def rpc_removeFromGroup(self, widget=None, data=None):
         try:
-            result = server.confluence1.removeUserFromGroup(self.token, self.userEntry.get_text(), self.groupEntry.get_text())
+            result = self.loginObj.server.confluence1.removeUserFromGroup(self.loginObj.token, self.userEntry.get_text(), self.groupEntry.get_text())
             userDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, userDialog)
@@ -576,99 +464,18 @@ class ConfluenceGTK:
                 email = row[2]
                 password = self.randomPassword()
                 user = {"name":userName,"fullname":fullName,"email":email}
-                self.server.confluence1.addUser(self.token, user, password)
+                self.loginObj.server.confluence1.addUser(self.loginObj.token, user, password)
                 for x in row[3:]:
-                    self.server.confluence1.addUserToGroup(self.token, userName, x)
+                    self.loginObj.server.confluence1.addUserToGroup(self.loginObj.token, userName, x)
             self.successDialog("\t\tUsers added successfully!\t\t")
         except xmlrpclib.Fault:
                 self.errDialog("\t\tFailed to add '%s'\t\t\n Please ensure user doesn't already exist" % userName)
                 
         self.csvSelector.destroy()
-        
-    def searchConfluence(self, widget):
-        self.mainWindow.remove(self.menuVBox)
-
-        #Main boxes
-        self.searchVBox = gtk.VBox(False, 0)
-        self.searchHBox = gtk.HBox(False, 0)
-        self.searchButtonsHBox = gtk.HBox(False, 0)
-
-        #Title
-        self.searchTitle = gtk.Label("Search Your Confluence Instance")
-
-        #Search Section
-        self.searchLabel = gtk.Label("Search: ")
-        self.searchEntry = gtk.Entry()
-        
-        #Results
-        self.searchView = gtk.TextView()
-        self.searchView.set_editable(False)
-        self.searchView.set_wrap_mode(gtk.WRAP_WORD)
-        self.searchWindow = gtk.ScrolledWindow()
-        self.searchWindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.searchWindow.add(self.searchView)
-        self.searchBuffer = self.searchView.get_buffer()
-        self.searchBuffer.set_text("Results will be displayed here")
-        self.searchHBox.pack_start(self.searchLabel, False, False, 0)
-        self.searchHBox.pack_start(self.searchEntry, False, False, 0)
-
-        #Buttons
-        self.returnMainMenuButton = gtk.Button(" Main Menu ")
-        self.returnMainMenuButton.connect("clicked", self.transToMain, self.searchVBox)
-        self.searchSubmit = gtk.Button(" Search ")
-        self.searchSubmit.connect("clicked", self.rpc_search)
-        self.searchButtonsHBox.pack_start(self.returnMainMenuButton, True, True, 0)
-        self.searchButtonsHBox.pack_start(self.searchSubmit, True, True, 0)
-
-        #Pack it All Up
-        self.searchVBox.pack_start(self.searchTitle, False, True, 0)
-        self.searchVBox.pack_start(self.searchHBox, False, True, 15)
-        self.searchVBox.pack_start(self.searchWindow, True, True, 0)
-        self.searchVBox.pack_end(self.searchButtonsHBox, False, True, 0)
-
-        #Show it All Off
-        self.searchTitle.show()
-        self.searchLabel.show()
-        self.searchEntry.show()
-        self.searchView.show()
-        self.searchWindow.show()
-        self.searchSubmit.show()
-        self.returnMainMenuButton.show()
-        self.searchButtonsHBox.show()
-        self.searchHBox.show()
-        self.searchVBox.show()
-        self.mainWindow.add(self.searchVBox)
-
-    def rpc_search(self, widget=None, data=None):
-        self.searchBuffer.set_text("")
-        try:
-            results = self.server.confluence1.search(self.token, self.searchEntry.get_text(), 50)
-            tempFile = open("/tmp/confSearch.tmp", "w")
-            if tempFile:
-                if results != "":
-                    for i in results:
-                        tempFile.write("Title: \t %s \n" % i["title"])
-                        tempFile.write("URL: \t %s \n" % i["url"])
-                        tempFile.write("Excerpt: \t %s \n\n" % i["excerpt"])
-                tempFile.close()
-
-            infile = open("/tmp/confSearch.tmp", "r")
-            if infile:
-                searchResults = infile.read()
-                infile.close()
-                self.searchBuffer.set_text(searchResults)
-
-            os.remove("/tmp/confSearch.tmp")
-        
-        except xmlrpclib.Fault:
-            self.errDialog("Search failed, and can be finicky at times.\nPlease try different search terms")
-            
-        except:
-            self.errDialog("\t\tConnection Failed\t\t")
 
     def contentManagement(self, widget):
         #Remove the current VBox
-        self.mainWindow.remove(self.menuVBox)
+        self.mainWindow.remove(self.loginObj.menuVBox)
 
         #Create our new Vbox
         self.contentManagementVBox = gtk.VBox(False, 0)
@@ -745,7 +552,7 @@ class ConfluenceGTK:
 
     def transToMain(self, widget=None, data=None):
         self.mainWindow.remove(data)
-        self.launchPad()    
+        self.loginObj.launchPad()    
 
     def updatePost(self, widget=None):
         print "updatePost"
@@ -816,7 +623,7 @@ class ConfluenceGTK:
 
     def grabContent(self, widget=None):
         try:
-            self.pageText = self.server.confluence1.getPage(self.token, self.updatePageKey.get_text(), self.updatePagePostTitle.get_text())
+            self.pageText = self.loginObj.server.confluence1.getPage(self.loginObj.token, self.updatePageKey.get_text(), self.updatePagePostTitle.get_text())
             self.updatePageTextBuffer.set_text(self.pageText["content"])
             self.updatePageTextView.set_buffer(self.updatePageTextBuffer)
         except xmlrpclib.Fault:
@@ -826,7 +633,7 @@ class ConfluenceGTK:
         try:
             startiter, enditer = self.updatePageTextBuffer.get_bounds()
             self.pageText["content"] = self.updatePageTextBuffer.get_text(startiter,enditer)
-            result = self.server.confluence1.storePage(self.token, self.pageText)
+            result = self.loginObj.server.confluence1.storePage(self.loginObj.token, self.pageText)
             updatePageDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, updatePageDialog)
@@ -912,11 +719,11 @@ class ConfluenceGTK:
         try:
             startiter, enditer = self.newPageTextBuffer.get_bounds()
             if self.newPageParentEntry.get_text() != "Title of Page":
-                tempPage = self.server.confluence1.getPage(self.token, self.newPageKey.get_text(), self.newPageParentEntry.get_text())
+                tempPage = self.loginObj.server.confluence1.getPage(self.loginObj.token, self.newPageKey.get_text(), self.newPageParentEntry.get_text())
                 newPost = {"title":self.newPagePostTitle.get_text(), "space":self.newPageKey.get_text(), "content":self.newPageTextBuffer.get_text(startiter, enditer), "parentId":tempPage["id"]}
             else:
                 newPost = {"title":self.newPagePostTitle.get_text(), "space":self.newPageKey.get_text(), "content":self.newPageTextBuffer.get_text(startiter, enditer)}
-            result = self.server.confluence1.storePage(self.token, newPost)
+            result = self.loginObj.server.confluence1.storePage(self.loginObj.token, newPost)
             newPageDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, newPageDialog)
@@ -990,7 +797,7 @@ class ConfluenceGTK:
         try:
             startiter, enditer = self.newPostTextBuffer.get_bounds()
             newPost = {"title":self.newPostPostTitle.get_text(), "space":self.newPostKey.get_text(), "content":self.newPostTextBuffer.get_text(startiter, enditer)}
-            result = self.server.confluence1.storeBlogEntry(self.token, newPost)
+            result = self.loginObj.server.confluence1.storeBlogEntry(self.loginObj.token, newPost)
             newPostDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, newPostDialog)
@@ -1072,7 +879,7 @@ class ConfluenceGTK:
     def rpc_addSpace(self, widget=None, data=None):
         try:
             space = {"key":self.newSpaceKeyEntry.get_text(),"name":self.newSpaceTitleEntry.get_text(),"description":self.newSpaceDescEntry.get_text()}
-            result = self.server.confluence1.addSpace(self.token, space)
+            result = self.loginObj.server.confluence1.addSpace(self.loginObj.token, space)
             newPageDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, newPageDialog)
@@ -1142,8 +949,8 @@ class ConfluenceGTK:
 
     def rpc_removePage(self, widget=None):
         try:
-            page = self.server.confluence1.getPage(self.token, self.removePageKeyEntry.get_text(), self.removePageTitleEntry.get_text())
-            result = self.server.confluence1.removePage(self.token, page["id"])
+            page = self.loginObj.server.confluence1.getPage(self.loginObj.token, self.removePageKeyEntry.get_text(), self.removePageTitleEntry.get_text())
+            result = self.loginObj.server.confluence1.removePage(self.loginObj.token, page["id"])
             newPageDialog = gtk.Dialog("Success", self.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
             button.connect("clicked", self.removeDialog, newPageDialog)
@@ -1179,7 +986,7 @@ class ConfluenceGTK:
 
     def rpc_removeSpace(self, widget=None, data=None):
         try:
-            self.server.confluence1.removeSpace(self.token, self.removeSpaceEntry.get_text())
+            self.loginObj.server.confluence1.removeSpace(self.loginObj.token, self.removeSpaceEntry.get_text())
             self.removeSpaceDialog.hide()
         except xmlrpclib.Fault:
             self.errDialog("\t\tSpace Removal Failed\t\t\nPage either doesn't exist, or you lack permission")
