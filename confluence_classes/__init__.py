@@ -1,2 +1,4 @@
 import confluence_login 
 import confluence_search
+import confluence_users
+import confluence_content

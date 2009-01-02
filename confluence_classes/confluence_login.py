@@ -110,7 +110,7 @@ class ConfluenceLogin:
 		
 		#User Management
 		self.userManageButton = gtk.Button("Manage Users")
-		self.userManageButton.connect("clicked", self.master.userManagement)
+		self.userManageButton.connect("clicked", self.master.userObj.userManagement)
 		
 		#Search Button
 		self.searchButton = gtk.Button("Search Confluence")
@@ -118,7 +118,7 @@ class ConfluenceLogin:
 		
 		#Content Management Button
 		self.contentButton = gtk.Button("Content Management")
-		self.contentButton.connect("clicked", self.master.contentManagement)
+		self.contentButton.connect("clicked", self.master.contentObj.contentManagement)
 		
 		#Pack it all Up
 		self.menuVBox.pack_start(self.menuLabel, False, False, 0)
