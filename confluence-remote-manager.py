@@ -88,6 +88,10 @@ class ConfluenceGTK:
         label.show()
         button.show()
         successDia.show()
+        
+    def transToMain(self, widget=None, data=None):
+        self.mainWindow.remove(data)
+        self.loginObj.launchPad()
 
 def main():
     gtk.main()

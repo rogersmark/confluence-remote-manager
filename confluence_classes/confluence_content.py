@@ -65,7 +65,7 @@ class ContentManageMent:
         
         #Now the buttons to direct us from here
         self.returnMainMenuButton = gtk.Button(" Main Menu ")
-        self.returnMainMenuButton.connect("clicked", self.transToMain, self.contentManagementVBox)
+        self.returnMainMenuButton.connect("clicked", self.master.transToMain, self.contentManagementVBox)
         self.contentManageHBoxBottom.pack_start(self.returnMainMenuButton, True, True, 30)
 
         #Pack it all Up in VBox
@@ -90,11 +90,7 @@ class ContentManageMent:
         self.contentManagementVBox.show()
     
         #Add to Window
-        self.master.mainWindow.add(self.contentManagementVBox)    
-
-    def transToMain(self, widget=None, data=None):
-        self.master.mainWindow.remove(data)
-        self.master.loginObj.launchPad()    
+        self.master.mainWindow.add(self.contentManagementVBox)        
 
     def updatePost(self, widget=None):
         print "updatePost"
@@ -129,7 +125,7 @@ class ContentManageMent:
 
         #Submit that shit
         self.returnMainMenuButton = gtk.Button(" Main Menu ")
-        self.returnMainMenuButton.connect("clicked", self.transToMain, self.updatePageVBox)
+        self.returnMainMenuButton.connect("clicked", self.master.transToMain, self.updatePageVBox)
         self.updatePageHBox2 = gtk.HBox(False, 0)
         self.updatePageHBox2.pack_start(self.returnMainMenuButton, True, True, 0)
         self.updatePageButton = gtk.Button("Submit")
@@ -221,7 +217,7 @@ class ContentManageMent:
 
         #Submit that shit
         self.returnMainMenuButton = gtk.Button(" Main Menu ")
-        self.returnMainMenuButton.connect("clicked", self.transToMain, self.newPageVBox)
+        self.returnMainMenuButton.connect("clicked", self.master.transToMain, self.newPageVBox)
         self.newPageHBox2 = gtk.HBox(False, 0)
         self.newPageHBox2.pack_start(self.returnMainMenuButton, True, True, 0)
         self.newPageButton = gtk.Button("Submit")
@@ -303,7 +299,7 @@ class ContentManageMent:
 
         #Submit that shit
         self.returnMainMenuButton = gtk.Button(" Main Menu ")
-        self.returnMainMenuButton.connect("clicked", self.transToMain, self.newPostVBox)
+        self.returnMainMenuButton.connect("clicked", self.master.transToMain, self.newPostVBox)
         self.newPostHBox2 = gtk.HBox(False, 0)
         self.newPostHBox2.pack_start(self.returnMainMenuButton, True, True, 0)
         self.newPostButton = gtk.Button("Submit")
@@ -368,7 +364,7 @@ class ContentManageMent:
 
         #Return to Main Menu
         self.returnMainMenuButton = gtk.Button(" Main Menu ")
-        self.returnMainMenuButton.connect("clicked", self.transToMain, self.newSpaceVBox)
+        self.returnMainMenuButton.connect("clicked", self.master.transToMain, self.newSpaceVBox)
 
         #Submit to Confluence
         self.newSpaceSubmit = gtk.Button(" Submit ")
@@ -444,7 +440,7 @@ class ContentManageMent:
         #Return to Main Menu
         self.returnMainMenuButton = ""
         self.returnMainMenuButton = gtk.Button(" Main Menu ")
-        self.returnMainMenuButton.connect("clicked", self.transToMain, self.removePageMainVBox)
+        self.returnMainMenuButton.connect("clicked", self.master.transToMain, self.removePageMainVBox)
 
         #Our Submit Button
         self.removePageSubmit = gtk.Button("Submit")

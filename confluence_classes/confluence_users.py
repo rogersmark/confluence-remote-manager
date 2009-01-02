@@ -23,7 +23,7 @@ class UserManageMent:
 
     def userManagement(self, widget):
         #Remove the current VBox
-        self.master.userObj.mainWindow.remove(self.master.loginObj.menuVBox)
+        self.master.mainWindow.remove(self.master.loginObj.menuVBox)
 
         #Create our new Vbox
         self.userManagementVBox = gtk.VBox(False, 0)
@@ -68,7 +68,7 @@ class UserManageMent:
         
         #Now the buttons to direct us from here
         self.returnMainMenuButton = gtk.Button(" Main Menu ")
-        self.returnMainMenuButton.connect("clicked", self.transToMain, self.userManagementVBox)
+        self.returnMainMenuButton.connect("clicked", self.master.transToMain, self.userManagementVBox)
         self.userManageHBoxBottom.pack_start(self.returnMainMenuButton, True, True, 30)
 
         #Pack it all Up in VBox
@@ -95,7 +95,7 @@ class UserManageMent:
         self.master.mainWindow.add(self.userManagementVBox)
         
     def addUser(self, widget=None, data=None):
-        self.addUserDia = gtk.Dialog("Add User", self.mainWindow)
+        self.addUserDia = gtk.Dialog("Add User", self.master.mainWindow)
         okButton = gtk.Button("Submit", gtk.STOCK_OK)
         cancel = gtk.Button("Cancel", gtk.STOCK_CANCEL)
         userLabel = gtk.Label("Username: ")
@@ -109,7 +109,7 @@ class UserManageMent:
         
         #Buttons
         okButton.connect("clicked", self.rpc_addUser)
-        cancel.connect("clicked", self.removeDialog, self.addUserDia)
+        cancel.connect("clicked", self.master.removeDialog, self.addUserDia)
         self.addUserDia.action_area.pack_start(cancel, True, True, 0)
         self.addUserDia.action_area.pack_end(okButton, True, True, 5)
         
@@ -154,9 +154,9 @@ class UserManageMent:
         userDict = {"name":self.userEntry.get_text(), "fullname":self.nameEntry.get_text(), "email":self.emailEntry.get_text()}
         try:
             result = self.master.loginObj.server.confluence1.addUser(self.master.loginObj.token, userDict, self.passEntry.get_text())
-            userDialog = gtk.Dialog("Success", self.mainWindow)
+            userDialog = gtk.Dialog("Success", self.master.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
-            button.connect("clicked", self.removeDialog, userDialog)
+            button.connect("clicked", self.master.removeDialog, userDialog)
             label = gtk.Label("User '%s' Added Successfully" % self.userEntry.get_text())
             userDialog.vbox.pack_start(label, True, True, 0)
             userDialog.action_area.pack_start(button, True, True, 0)
@@ -167,7 +167,7 @@ class UserManageMent:
             self.master.errDialog("           User Add Failed \n User Likely Exists Already              ")
     
     def removeUser(self, widget=None, data=None):
-        self.rmUserDia = gtk.Dialog("Remove User", self.mainWindow)
+        self.rmUserDia = gtk.Dialog("Remove User", self.master.mainWindow)
         okButton = gtk.Button("Submit", gtk.STOCK_OK)
         cancel = gtk.Button("Cancel", gtk.STOCK_CANCEL)
         userLabel = gtk.Label("Username: ")
@@ -175,7 +175,7 @@ class UserManageMent:
         
         #Buttons
         okButton.connect("clicked", self.rpc_removeUser)
-        cancel.connect("clicked", self.removeDialog, self.rmUserDia)
+        cancel.connect("clicked", self.master.removeDialog, self.rmUserDia)
         self.rmUserDia.action_area.pack_start(cancel, True, True, 0)
         self.rmUserDia.action_area.pack_end(okButton, True, True, 5)
         
@@ -198,9 +198,9 @@ class UserManageMent:
     def rpc_removeUser(self, widget=None, data=None):
         try:
             result = self.master.loginObj.server.confluence1.removeUser(self.master.loginObj.token, self.userEntry.get_text())
-            userDialog = gtk.Dialog("Success", self.mainWindow)
+            userDialog = gtk.Dialog("Success", self.master.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
-            button.connect("clicked", self.removeDialog, userDialog)
+            button.connect("clicked", self.master.removeDialog, userDialog)
             label = gtk.Label("User '%s' Removed Successfully" % self.userEntry.get_text())
             userDialog.vbox.pack_start(label, True, True, 0)
             userDialog.action_area.pack_start(button, True, True, 0)
@@ -211,7 +211,7 @@ class UserManageMent:
             self.master.errDialog("           User removal failed.\n User likely doesn't exist              ")
     
     def addGroup(self, widget=None, data=None):
-        self.addGroupDia = gtk.Dialog("Add Group", self.mainWindow)
+        self.addGroupDia = gtk.Dialog("Add Group", self.master.mainWindow)
         okButton = gtk.Button("Submit", gtk.STOCK_OK)
         cancel = gtk.Button("Cancel", gtk.STOCK_CANCEL)
         groupLabel = gtk.Label("Group Name: ")
@@ -219,7 +219,7 @@ class UserManageMent:
         
         #Buttons
         okButton.connect("clicked", self.rpc_addGroup)
-        cancel.connect("clicked", self.removeDialog, self.addGroupDia)
+        cancel.connect("clicked", self.master.removeDialog, self.addGroupDia)
         self.addGroupDia.action_area.pack_start(cancel, True, True, 0)
         self.addGroupDia.action_area.pack_end(okButton, True, True, 5)
         
@@ -242,9 +242,9 @@ class UserManageMent:
     def rpc_addGroup(self, widget=None, data=None):
         try:
             result = self.master.loginObj.server.confluence1.addGroup(self.master.loginObj.token, self.groupEntry.get_text())
-            userDialog = gtk.Dialog("Success", self.mainWindow)
+            userDialog = gtk.Dialog("Success", self.master.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
-            button.connect("clicked", self.removeDialog, userDialog)
+            button.connect("clicked", self.master.removeDialog, userDialog)
             label = gtk.Label("Group '%s' Added Successfully" % self.groupEntry.get_text())
             userDialog.vbox.pack_start(label, True, True, 0)
             userDialog.action_area.pack_start(button, True, True, 0)
@@ -255,7 +255,7 @@ class UserManageMent:
             self.master.errDialog("           Group Addition Failed. \n You either lack the proper permissions, or the group exists.              ")
     
     def removeGroup(self, widget=None, data=None):
-        self.rmGroupDia = gtk.Dialog("Remove Group", self.mainWindow)
+        self.rmGroupDia = gtk.Dialog("Remove Group", self.master.mainWindow)
         okButton = gtk.Button("Submit", gtk.STOCK_OK)
         cancel = gtk.Button("Cancel", gtk.STOCK_CANCEL)
         groupLabel = gtk.Label("Group Name: ")
@@ -263,7 +263,7 @@ class UserManageMent:
         
         #Buttons
         okButton.connect("clicked", self.rpc_removeGroup)
-        cancel.connect("clicked", self.removeDialog, self.rmGroupDia)
+        cancel.connect("clicked", self.master.removeDialog, self.rmGroupDia)
         self.rmGroupDia.action_area.pack_start(cancel, True, True, 0)
         self.rmGroupDia.action_area.pack_end(okButton, True, True, 5)
         
@@ -286,9 +286,9 @@ class UserManageMent:
     def rpc_removeGroup(self, widget=None, data=None):
         try:
             result = self.master.loginObj.server.confluence1.removeGroup(self.master.loginObj.token, self.groupEntry.get_text(), "")
-            userDialog = gtk.Dialog("Success", self.mainWindow)
+            userDialog = gtk.Dialog("Success", self.master.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
-            button.connect("clicked", self.removeDialog, userDialog)
+            button.connect("clicked", self.master.removeDialog, userDialog)
             label = gtk.Label("Group '%s' Removed Successfully" % self.groupEntry.get_text())
             userDialog.vbox.pack_start(label, True, True, 0)
             userDialog.action_area.pack_start(button, True, True, 0)
@@ -299,7 +299,7 @@ class UserManageMent:
             self.master.errDialog("           \tGroup Removal Failed. \n You either lack the proper permissions, or the group doesn't exist.              ")
     
     def addToGroup(self, widget=None, data=None):
-        self.addUserDia = gtk.Dialog("Add User to Group", self.mainWindow)
+        self.addUserDia = gtk.Dialog("Add User to Group", self.master.mainWindow)
         okButton = gtk.Button("Submit", gtk.STOCK_OK)
         cancel = gtk.Button("Cancel", gtk.STOCK_CANCEL)
         userLabel = gtk.Label("Username: ")
@@ -309,7 +309,7 @@ class UserManageMent:
         
         #Buttons
         okButton.connect("clicked", self.rpc_addToGroup)
-        cancel.connect("clicked", self.removeDialog, self.addUserDia)
+        cancel.connect("clicked", self.master.removeDialog, self.addUserDia)
         self.addUserDia.action_area.pack_start(cancel, True, True, 0)
         self.addUserDia.action_area.pack_end(okButton, True, True, 5)
         
@@ -339,9 +339,9 @@ class UserManageMent:
     def rpc_addToGroup(self, widget=None, data=None):
         try:
             result = self.master.loginObj.server.confluence1.addUserToGroup(self.master.loginObj.token, self.userEntry.get_text(), self.groupEntry.get_text())
-            userDialog = gtk.Dialog("Success", self.mainWindow)
+            userDialog = gtk.Dialog("Success", self.master.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
-            button.connect("clicked", self.removeDialog, userDialog)
+            button.connect("clicked", self.master.removeDialog, userDialog)
             label = gtk.Label("User Added to '%s' Successfully" % self.groupEntry.get_text())
             userDialog.vbox.pack_start(label, True, True, 0)
             userDialog.action_area.pack_start(button, True, True, 0)
@@ -352,7 +352,7 @@ class UserManageMent:
             self.master.errDialog("\t\tFailed to add user to Group.\n\t\tPlease check your permission level")
     
     def removeFromGroup(self, widget=None, data=None):
-        self.addUserDia = gtk.Dialog("Add User to Group", self.mainWindow)
+        self.addUserDia = gtk.Dialog("Add User to Group", self.master.mainWindow)
         okButton = gtk.Button("Submit", gtk.STOCK_OK)
         cancel = gtk.Button("Cancel", gtk.STOCK_CANCEL)
         userLabel = gtk.Label("Username: ")
@@ -362,7 +362,7 @@ class UserManageMent:
         
         #Buttons
         okButton.connect("clicked", self.rpc_removeFromGroup)
-        cancel.connect("clicked", self.removeDialog, self.addUserDia)
+        cancel.connect("clicked", self.master.removeDialog, self.addUserDia)
         self.addUserDia.action_area.pack_start(cancel, True, True, 0)
         self.addUserDia.action_area.pack_end(okButton, True, True, 5)
         
@@ -392,9 +392,9 @@ class UserManageMent:
     def rpc_removeFromGroup(self, widget=None, data=None):
         try:
             result = self.master.loginObj.server.confluence1.removeUserFromGroup(self.master.loginObj.token, self.userEntry.get_text(), self.groupEntry.get_text())
-            userDialog = gtk.Dialog("Success", self.mainWindow)
+            userDialog = gtk.Dialog("Success", self.master.mainWindow)
             button = gtk.Button("Okay", gtk.STOCK_OK)
-            button.connect("clicked", self.removeDialog, userDialog)
+            button.connect("clicked", self.master.removeDialog, userDialog)
             label = gtk.Label("User Removed From '%s' Successfully" % self.groupEntry.get_text())
             userDialog.vbox.pack_start(label, True, True, 0)
             userDialog.action_area.pack_start(button, True, True, 0)
