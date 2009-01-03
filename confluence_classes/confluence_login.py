@@ -17,7 +17,6 @@ class ConfluenceLogin:
 	def __init__(self, master=None):
 		self.token = ""
 		self.master = master
-		print self.master
 		self.login()
 		
 	def login(self):
@@ -95,11 +94,11 @@ class ConfluenceLogin:
 	    except xmlrpclib.Fault:
     		self.master.errDialog("\t\t\tLogin Failed\t\t\t")
 
-    	'''except NameError:
+	    except NameError:
     		self.master.errDialog("\t\t\tURL Must end with proper RPC \n http://test.com/rpc/xmlrpc for example\t\t\t")
 
-    	except:
-    		self.master.errDialog("\t\tConnection Failed\t\t")'''
+	    except:
+    		self.master.errDialog("\t\tConnection Failed\t\t")
 
 	def launchPad(self):
 		    #Vertical Box

@@ -48,10 +48,6 @@ class ConfluenceGTK:
         self.contentObj = confluence_content.ContentManageMent(self)
         self.mainWindow.show()
 
-
-    def callback(self, widget, data=None):
-        print "%s was toggled %s" % (data, ("OFF", "ON")[widget.get_active()])
-
     def removeDialog(self, widget, data=None):
         data.hide()
         
