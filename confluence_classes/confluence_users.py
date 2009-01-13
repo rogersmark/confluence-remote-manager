@@ -44,6 +44,7 @@ class UserManageMent:
         self.addToGroupRadio = gtk.Button("Add User To Group")
         self.rmFromGroupRadio = gtk.Button("Remove User From Group")
         self.bulkAddUsersRadio = gtk.Button("Add Bulk Users Via CSV")
+        self.listAllUsersRadio = gtk.Button("List All Users")
 
         #Connect the Buttons to Funcs
         self.addUserRadio.connect("clicked", self.addUser)
@@ -53,6 +54,7 @@ class UserManageMent:
         self.addToGroupRadio.connect("clicked", self.addToGroup)
         self.rmFromGroupRadio.connect("clicked", self.removeFromGroup)
         self.bulkAddUsersRadio.connect("clicked", self.bulkAddUsers)
+        self.listAllUsersRadio.connect("clicked", self.listAllUsers)
 
         #Pack All the Radio Buttons
         self.updatePostRadioVBox.pack_start(self.addUserRadio, False, False, 5)
@@ -62,6 +64,7 @@ class UserManageMent:
         self.updatePostRadioVBox.pack_start(self.addToGroupRadio, False, False, 5)
         self.updatePostRadioVBox.pack_start(self.rmFromGroupRadio, False, False, 5)
         self.updatePostRadioVBox.pack_start(self.bulkAddUsersRadio, False, False, 5)
+        self.updatePostRadioVBox.pack_start(self.listAllUsersRadio, False, False, 5)
 
         #Pack the VBox into the HBox so we can pack it into the greater VBox shortly.
         self.userManageHBoxTop.pack_start(self.updatePostRadioVBox, False, False, 200)
@@ -88,6 +91,7 @@ class UserManageMent:
         self.returnMainMenuButton.show()
         self.userManageHBoxBottom.show()
         self.updatePostRadioVBox.show()
+        self.listAllUsersRadio.show()
         self.userManageHBoxTop.show()
         self.userManagementVBox.show()
     
@@ -444,3 +448,44 @@ class UserManageMent:
                 self.master.errDialog("\t\tFailed to add '%s'\t\t\n Please ensure user doesn't already exist" % userName)
                 
         self.csvSelector.destroy()
+        
+    def listAllUsers(self, widget=None, data=None):
+        self.listUsersDia = gtk.Dialog("Users", self.master.mainWindow)
+        self.listUsersDia.set_size_request(300,200)
+        okButton = gtk.Button("Close", gtk.STOCK_OK)
+        #cancel = gtk.Button("Cancel", gtk.STOCK_CANCEL)
+        #usersLabel = gtk.Label("Group Name: ")
+        #self.groupEntry = gtk.Entry()
+        self.userListScroll = gtk.ScrolledWindow()
+        self.userListScroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.userView = gtk.TextView()
+        self.userView.set_editable(False)
+        self.userBuffer = self.userView.get_buffer()
+        self.userListScroll.add(self.userView)
+        
+        #Populate the text box
+        users = self.master.loginObj.server.confluence1.getActiveUsers(self.master.loginObj.token, True)
+        userString = ""
+        for x in users:
+            userString += x + "\n"
+            
+        self.userBuffer.set_text(userString)
+        
+        #Buttons
+        okButton.connect("clicked", self.master.removeDialog, self.listUsersDia)
+        self.listUsersDia.action_area.pack_end(okButton, True, True, 5)
+        
+        #Entries/Labels
+        #addGroupHBox = gtk.HBox(False, 0)
+        #addGroupHBox.pack_start(groupLabel, True, True, 0)
+        #addGroupHBox.pack_end(self.groupEntry, True, True, 0)
+        
+        #Pack it Up
+        self.listUsersDia.vbox.pack_start(self.userListScroll, True, True, 0)
+        
+        #Show it all off
+        okButton.show()
+        self.userListScroll.show()
+        self.userView.show()
+        self.listUsersDia.vbox.show()
+        self.listUsersDia.show()
