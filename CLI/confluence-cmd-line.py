@@ -4,6 +4,7 @@
 import os
 import sys
 import getpass
+import xmlrpclib
 from xmlrpclib import Server
 
 server = Server("https://extranet.contegix.com/rpc/xmlrpc")
@@ -185,6 +186,19 @@ def removeSpace(token):
         for i in spaces:
                 print i["name"]
 
+def importSpace(token):
+	print "Please provide the path to the ZIPPED XML Space backup:"
+	backup_zip = sys.stdin.readline()
+	backup_zip = backup_zip.rstrip()
+	backup_file = open(backup_zip, "r")
+	backup_raw = backup_file.read()
+	backup_binary = xmlrpclib.Binary(backup_raw)
+	result = server.confluence1.importSpace(token, backup_binary)
+	if result:
+		print "Space imported successfully"
+	else:
+		print "Space import failed"
+
 def menu():
         print "What would you like to do today?"
 	print "1. User Management"
@@ -245,6 +259,7 @@ def menu():
 		print "4. Remove Page"
 		print "5. Add Space"
 		print "6. Remove Space"
+		print "7. Import Space"
 		option = sys.stdin.readline()
 	        option = option.rstrip("\n")
 		if option == '1':
@@ -270,6 +285,10 @@ def menu():
 		elif option == '6':
 			auth = authentication()
 			removeSpace(auth)
+			server.confluence1.logout(auth)
+		elif option == '7':
+			auth = authentication()
+			importSpace(auth)
 			server.confluence1.logout(auth)
 		else:
 			print "Invalid option"
