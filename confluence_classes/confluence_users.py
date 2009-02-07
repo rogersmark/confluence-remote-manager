@@ -428,6 +428,7 @@ class UserManageMent:
         response = self.csvSelector.run()
         if response == gtk.RESPONSE_OK:
             self.rpc_bulkAddUsers()
+            self.csvSelector.destroy()
         else:
             self.csvSelector.destroy()
         
@@ -446,8 +447,6 @@ class UserManageMent:
             self.master.successDialog("\t\tUsers added successfully!\t\t")
         except xmlrpclib.Fault:
                 self.master.errDialog("\t\tFailed to add '%s'\t\t\n Please ensure user doesn't already exist" % userName)
-                
-        self.csvSelector.destroy()
         
     def listAllUsers(self, widget=None, data=None):
         self.listUsersDia = gtk.Dialog("Users", self.master.mainWindow)

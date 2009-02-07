@@ -39,6 +39,7 @@ class ContentManageMent:
         self.removePageRadio = gtk.Button("Remove Page")
 #        self.removePostRadio = gtk.Button("Remove Blog Post")
         self.removeSpaceRadio = gtk.Button("Remove Space")
+        self.importSpaceRadio = gtk.Button("Import Space")
 
         #Connect the Buttons to Funcs
         self.updatePageRadio.connect("clicked", self.updatePage)
@@ -49,6 +50,7 @@ class ContentManageMent:
         self.removePageRadio.connect("clicked", self.removePage)
 #        self.removePostRadio.connect("clicked", self.removeBlogPost)
         self.removeSpaceRadio.connect("clicked", self.removeSpace)
+        self.importSpaceRadio.connect("clicked", self.importSpace)
 
         #Pack All the Radio Buttons
         self.updatePostRadioVBox.pack_start(self.updatePageRadio, False, False, 5)
@@ -59,6 +61,7 @@ class ContentManageMent:
         self.updatePostRadioVBox.pack_start(self.removePageRadio, False, False, 5)
 #        self.updatePostRadioVBox.pack_start(self.removePostRadio, False, False, 5)
         self.updatePostRadioVBox.pack_start(self.removeSpaceRadio, False, False, 5)
+        self.updatePostRadioVBox.pack_start(self.importSpaceRadio, False, False, 5)
 
         #Pack the VBox into the HBox so we can pack it into the greater VBox shortly.
         self.contentManageHBoxTop.pack_start(self.updatePostRadioVBox, False, False, 200)
@@ -83,6 +86,7 @@ class ContentManageMent:
         self.removePageRadio.show()
 #        self.removePostRadio.show()
         self.removeSpaceRadio.show()
+        self.importSpaceRadio.show()
         self.returnMainMenuButton.show()
         self.contentManageHBoxBottom.show()
         self.updatePostRadioVBox.show()
@@ -528,3 +532,42 @@ class ContentManageMent:
             self.removeSpaceDialog.hide()
         except xmlrpclib.Fault:
             self.master.errDialog("\t\tSpace Removal Failed\t\t\nPage either doesn't exist, or you lack permission")
+
+    def importSpace(self, widget=None):
+        self.backupSelector = gtk.FileChooserDialog("Select Zipped XML Backup:",
+                                                None,
+                                                gtk.FILE_CHOOSER_ACTION_OPEN,
+                                                (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                                 gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+        
+        backupFiles = gtk.FileFilter()
+        backupFiles.set_name("zip")
+        backupFiles.add_pattern("*.zip")
+        self.backupSelector.add_filter(backupFiles)
+        
+        allFiles = gtk.FileFilter()
+        allFiles.set_name("All Files")
+        allFiles.add_pattern("*")
+        self.backupSelector.add_filter(allFiles)
+        
+        response = self.backupSelector.run()
+        if response == gtk.RESPONSE_OK:
+            self.rpc_importSpace()
+            self.backupSelector.destroy()
+        else:
+            self.backupSelector.destroy()
+        
+    def rpc_importSpace(self, widget=None, data=None):
+        try:
+            backupFile = open(self.backupSelector.get_filename())
+            backup_raw = backupFile.read()
+            backup_binary = xmlrpclib.Binary(backup_raw)
+            result = self.master.loginObj.server.confluence1.importSpace(self.master.loginObj.token, backup_binary)
+            if result:
+                self.master.successDialog("Space imported successfully")
+            else:
+                self.master.errDialog("Failed to import space. Does it exist already?")
+        except IOError:
+            self.master.errDialog("Failed to open file. Please check Permissions")
+        except xmlrpclib.Fault:
+            self.master.errDialog("Failed to import space. Please check your permissions")
